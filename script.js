@@ -3,61 +3,72 @@ const board = document.getElementById('board');
 const message = document.getElementById('message');
 const restartBtn = document.getElementById('restartBtn');
 
-let currentPlayer = 'x';
+let isXTurn = true;
 
 const winningCombinations = [
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [2, 4, 6]
+  [0,1,2],
+  [3,4,5],
+  [6,7,8],
+  [0,3,6],
+  [1,4,7],
+  [2,5,8],
+  [0,4,8],
+  [2,4,6]
 ];
 
+startGame();
+
+restartBtn.addEventListener('click', startGame);
+
 function startGame() {
+  isXTurn = true;
+  message.textContent = '';
   cells.forEach(cell => {
-    cell.classList.remove('x', 'o');
+    cell.classList.remove('X', 'O');
+    cell.textContent = '';
     cell.addEventListener('click', handleClick, { once: true });
   });
-  message.innerText = "";
-  currentPlayer = 'x';
 }
 
 function handleClick(e) {
   const cell = e.target;
-  cell.classList.add(currentPlayer);
-
-  if (checkWin(currentPlayer)) {
-    message.innerText = `${currentPlayer.toUpperCase()} Wins!`;
-    endGame();
+  const currentClass = isXTurn ? 'X' : 'O';
+  placeMark(cell, currentClass);
+  if (checkWin(currentClass)) {
+    endGame(false);
   } else if (isDraw()) {
-    message.innerText = "Draw!";
-    endGame();
+    endGame(true);
   } else {
-    currentPlayer = currentPlayer === 'x' ? 'o' : 'x';
+    isXTurn = !isXTurn;
   }
 }
 
-function checkWin(player) {
-  return winningCombinations.some(combination => {
-    return combination.every(index => {
-      return cells[index].classList.contains(player);
-    });
-  });
+function placeMark(cell, currentClass) {
+  cell.classList.add(currentClass);
+  cell.textContent = currentClass;
+}
+
+function checkWin(currentClass) {
+  return winningCombinations.some(combination =>
+    combination.every(index =>
+      cells[index].classList.contains(currentClass)
+    )
+  );
 }
 
 function isDraw() {
-  return [...cells].every(cell => {
-    return cell.classList.contains('x') || cell.classList.contains('o');
+  return [...cells].every(cell =>
+    cell.classList.contains('X') || cell.classList.contains('O')
+  );
+}
+
+function endGame(draw) {
+  if (draw) {
+    message.textContent = "It's a draw!";
+  } else {
+    message.textContent = `${isXTurn ? 'X' : 'O'} wins!`;
+  }
+  cells.forEach(cell => {
+    cell.removeEventListener('click', handleClick);
   });
 }
-
-function endGame() {
-  cells.forEach(cell => cell.removeEventListener('click', handleClick));
-}
-
-restartBtn.addEventListener('click', startGame);
-
-startGame();
